@@ -86,67 +86,77 @@ export class ApiLoader {
       ? { success: false }
       : { ...(await response.json()) };
   }
-  
+
   async getWinners(page: number, limit: number, sort?: string, order?: string) {
-    const response = await fetch(`${this.path.winners}?_page=${page}&_limit=${limit}${(sort && order) ? `&_sort=${sort}&_order=${order}` : ``}`)
+    const response = await fetch(
+      `${this.path.winners}?_page=${page}&_limit=${limit}${
+        sort && order ? `&_sort=${sort}&_order=${order}` : ``
+      }`
+    );
     return {
-        data: await response.json(),
-        count: response.headers.get("X-Total-Count")
-    }
+      data: await response.json(),
+      count: response.headers.get("X-Total-Count"),
+    };
   }
 
   async getWinner(id: number) {
-    const response = await ( await fetch(`${this.path.winners}/${id}`)).json()
+    const response = await (await fetch(`${this.path.winners}/${id}`)).json();
     return response;
   }
 
   async createWinner(body: Winner) {
-    const response = (await fetch(`${this.path.winners}`, {
+    const response = (
+      await fetch(`${this.path.winners}`, {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
-            'Content-Type': 'application/json'
-        }
-    })).json()
-    return response; 
+          "Content-Type": "application/json",
+        },
+      })
+    ).json();
+    return response;
   }
 
   async updateWinner(id: number, body: Winner) {
-    const response = (await fetch(`${this.path.winners}/${id}`, {
+    const response = (
+      await fetch(`${this.path.winners}/${id}`, {
         method: "PUT",
         body: JSON.stringify(body),
         headers: {
-            'Content-Type': 'application/json'
-        }
-    })).json()
+          "Content-Type": "application/json",
+        },
+      })
+    ).json();
     return response;
   }
 
   async deleteWinner(id: number) {
-    const response = (await fetch(`${this.path.winners}/${id}`, { method: "DELETE"})).json()
-    return response
+    const response = (
+      await fetch(`${this.path.winners}/${id}`, { method: "DELETE" })
+    ).json();
+    return response;
   }
 
   async getWinnerStatus(id: number) {
-    const response = await fetch(`${this.path.winners}/${id}`)
+    const response = await fetch(`${this.path.winners}/${id}`);
     return response.status;
   }
 
   async addWinner(id: number, time: number) {
-    const status = await this.getWinnerStatus(id)
+    const status = await this.getWinnerStatus(id);
     if (status === 404) {
-        await this.createWinner({
-            id: id,
-            wins: 1,
-            time: time
-        })
+      await this.createWinner({
+        id,
+        wins: 1,
+        time,
+      });
     } else {
-        const currenWinner = await this.getWinner(id)
-        await this.updateWinner(id, {
-            id: id,
-            wins: currenWinner.wins + 1,
-            time: currenWinner.time > time ? time : currenWinner.time,
-        })
+      const currenWinner = await this.getWinner(id);
+      await this.updateWinner(id, {
+        id,
+        wins: currenWinner.wins + 1,
+        time: currenWinner.time > time ? time : currenWinner.time,
+      });
     }
   }
 }

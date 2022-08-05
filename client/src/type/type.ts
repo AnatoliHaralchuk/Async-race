@@ -11,11 +11,11 @@ export interface Car {
 }
 
 // export interface ObjWinners {
-//     data: Array<Winner>;    
+//     data: Array<Winner>;
 //     count: number;
 // }
 export interface Winner {
-    id: number;
-    wins: number;
-    time: number;
+  id: number;
+  wins: number;
+  time: number;
 }

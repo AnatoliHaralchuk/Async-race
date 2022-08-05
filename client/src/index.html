@@ -5,10 +5,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./style.css">
-    <link rel="icon" href="#">
+    <link rel="icon" href="./assets/favicon.ico">
     <title>Async-race</title>
 </head>
 <body>
-    <script src="./index.ts"></script>
+    <div class="wrapper">
+        <header class="header-btn">
+            <button class="header-btn__garage header-btn">To Garage</button>
+            <button class="header-btn__winners header-btn">To Winners</button>
+        </header>
+        <main class="main">
+            <div class="set-control">
+                <form action="#" class="set-create form">
+                    <input type="text" class="create-name input" name="name">
+                    <input type="color" value="#000000" class="create-color color" name="name">
+                    <button type="submit" class="button">Create</button>
+                </form>
+                <form action="#" class="set-update form">
+                    <input type="text" class="update-name input" name="name">
+                    <input type="color" value="#000000" class="update-color color" name="name">
+                    <button type="submit" class="button">Update</button>
+                </form>
+            </div>
+            <div class="race-control">
+                <button class="race-btn button">Race</button>
+                <button class="reset-btn button">Reset</button>
+                <button class="generate-btn button">Generate Cars</button>
+            </div>
+            <div class="garage-wrapper"></div>
+            <div class="popap"></div>
+        </main>
+        <footer class="footer-btn">
+            <button class="footer-btn__prev footer-btn">prev</button>
+            <button class="footer-btn__next footer-btn">next</button>
+        </footer>
+    </div>
 </body>
 </html>
