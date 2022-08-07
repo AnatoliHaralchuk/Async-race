@@ -14,13 +14,13 @@ export class ApiLoader {
     };
   }
 
-  async getCars(page: number, limit: number) {
+  async getCars(page: number, limit = 7) {
     const response = await fetch(
       `${this.path.garage}?_page=${page}&_limit=${limit}`
     );
     return {
       data: await response.json(),
-      count: response.headers.get("X-Total-Count]"),
+      count: response.headers.get("X-Total-Count"),
     };
   }
 
@@ -66,22 +66,26 @@ export class ApiLoader {
 
   async startEngine(id: number) {
     const response = await (
-      await fetch(`${this.path.engine}?id=${id}&status=started`)
+      await fetch(`${this.path.engine}?id=${id}&status=started`, {
+        method: "PATCH",
+      })
     ).json();
     return response;
   }
 
   async stopEngine(id: number) {
     const response = await (
-      await fetch(`${this.path.engine}?id=${id}&status=stoped`)
+      await fetch(`${this.path.engine}?id=${id}&status=stopped`, {
+        method: "PATCH",
+      })
     ).json();
     return response;
   }
 
   async driveEngine(id: number) {
-    const response = await fetch(
-      `${this.path.engine}?id=${id}&status=drive`
-    ).catch();
+    const response = await fetch(`${this.path.engine}?id=${id}&status=drive`, {
+      method: "PATCH",
+    }).catch();
     return response.status !== 200
       ? { success: false }
       : { ...(await response.json()) };
