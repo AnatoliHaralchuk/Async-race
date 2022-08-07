@@ -15,7 +15,10 @@ export class View {
   drawFullPage(data: Data) {
     document.body.innerHTML = "";
     return (
-      this.drawHeaderBtn() + this.garage.drawMain(data) + this.drawFooterBtn()
+      this.drawHeaderBtn() +
+      this.garage.drawMain(data) +
+      this.winners.drawWinners(data) +
+      this.drawFooterBtn()
     );
   }
 
@@ -29,8 +32,8 @@ export class View {
   drawHeaderBtn() {
     return `
       <header class="header-btn">
-          <button class="header-btn__garage btn">To Garage</button>
-          <button class="header-btn__winners btn">To Winners</button>
+          <button class="header-btn btn" data-page = "garage">To Garage</button>
+          <button class="header-btn btn" data-page = "winners">To Winners</button>
       </header>`;
   }
 

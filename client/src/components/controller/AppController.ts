@@ -82,6 +82,10 @@ export class AppController {
       this.startEngine(Number(elem.dataset.start));
     if (elem.classList.contains("stop-engine"))
       this.stopEngine(Number(elem.dataset.stop));
+    if (elem.classList.contains("header-btn"))
+      this.togglePage(String(elem.dataset.page));
+    if (elem.classList.contains("race-btn")) this.race();
+    if (elem.classList.contains("reset-btn")) this.reset();
   }
 
   async create(callback: callbackAny<Data>) {
@@ -149,8 +153,11 @@ export class AppController {
   public startEngine(id: number): void {
     const A = document.querySelector(`[data-start = "${id}"]`) as HTMLElement;
     const B = document.querySelector(`[data-stop = "${id}"]`) as HTMLElement;
+    const raceBtn = document.querySelector(`.race-btn`) as HTMLElement;
+    const resetBtn = document.querySelector(`.reset-btn`) as HTMLElement;
     A.setAttribute("disabled", "true");
-    B.removeAttribute("disabled");
+    raceBtn.setAttribute("disabled", "true");
+    resetBtn.setAttribute("disabled", "true");
     this.apimetods.startEngine(id).then((result) => {
       const { velocity, distance } = result;
       const duration = Math.round(distance / velocity);
@@ -161,6 +168,9 @@ export class AppController {
       const way = flag.offsetLeft - car.offsetLeft + 100;
       this.data.anima = this.supportmetods.animation(car, way, duration);
       this.apimetods.driveEngine(id).then((res) => {
+        raceBtn.removeAttribute("disabled");
+        resetBtn.removeAttribute("disabled");
+        B.removeAttribute("disabled");
         if (!res.success) {
           if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
         }
@@ -176,5 +186,35 @@ export class AppController {
     const car = document.querySelector(`[data-id = "${id}"]`) as HTMLElement;
     const cloneCar = car;
     cloneCar.style.transform = `translateX(${0}px)`;
+  }
+
+  public togglePage(namePage: string) {
+    const winners = document.querySelector(".to-winners") as HTMLElement;
+    const garage = document.querySelector(".main") as HTMLElement;
+    if (namePage === "garage") {
+      winners.style.display = "none";
+      garage.style.display = "block";
+    } else {
+      winners.style.display = "block";
+      garage.style.display = "none";
+    }
+  }
+
+  public race() {
+    this.data.cars.forEach((car) => {
+      const btn = document.querySelector(
+        `[data-start = "${car.id}"]`
+      ) as HTMLElement;
+      btn.click();
+    });
+  }
+
+  public reset() {
+    this.data.cars.forEach((car) => {
+      const btn = document.querySelector(
+        `[data-stop = "${car.id}"]`
+      ) as HTMLElement;
+      btn.click();
+    });
   }
 }
