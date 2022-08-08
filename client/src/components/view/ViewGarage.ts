@@ -24,7 +24,7 @@ export class ViewGarage {
             <div class="garage-wrapper">
                 ${this.drawGarage(data)}
             </div>
-            <div class="popap"></div>
+            <div class="popap" style = "display = "none""></div>
         </main>         
         `;
   }
