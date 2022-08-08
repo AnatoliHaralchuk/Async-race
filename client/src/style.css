@@ -20,17 +20,14 @@ body{
     display: flex;
     column-gap: 0.8rem;
 }
-.header-btn__garage {
-}
 .btn,
 .btn-engine {
     box-shadow: 0 0 0.2rem 0.1rem grey ;
     font-size: 1.2rem;
     cursor: pointer;
 }
-.header-btn__winners {
-}
-.main {
+.main,
+.to-winners {
     background-color:rgb(220, 220, 164);
     padding: 0.8rem;
     flex: 1 1 auto;
@@ -40,31 +37,19 @@ body{
     flex-direction: column;
     row-gap: 0.8rem;
 }
-.set-create {
-}
 .form {
     display: flex;
     justify-content: space-between;
     column-gap: 0.8rem;
     width: 28rem;
 }
-.create-name {
-}
 .input {
     width: 50%;
     font-size: 1.2rem;
     box-shadow: 0 0 2px 2px grey; 
 }
-.create-color {
-}
 .color {
     height: initial;
-}
-.set-update {
-}
-.update-name {
-}
-.update-color {
 }
 .update-btn,
 .create-btn {
@@ -101,10 +86,6 @@ body{
     display: flex;
     column-gap: 1.2rem;
     padding-top: 0.8rem;
-}
-.select-car {
-}
-.remove-car {
 }
 .name-car {
     font-size: inherit;

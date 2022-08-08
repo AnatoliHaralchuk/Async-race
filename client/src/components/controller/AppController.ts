@@ -1,5 +1,5 @@
 import { ApiLoader } from "./ApiLoader";
-import { callbackAny, Data } from "../../type/type";
+import { callbackAny, Data, Winners } from "../../type/type";
 import { SupportMetods } from "./supportMetods";
 
 export class AppController {
@@ -25,6 +25,8 @@ export class AppController {
     sortOrder: null,
   };
 
+  public raceCar: Array<Winners> = [];
+
   public startPage(callback: callbackAny<Data>) {
     this.apimetods
       .getCars(this.data.carsPage)
@@ -40,18 +42,27 @@ export class AppController {
           document.body.append(wrapper);
         }
       })
-      .then(() => this.disPaginationGarage(7));
+      .then(() => {
+        if (this.data.view === "garage")
+          this.disPaginationGarage(this.data.carsCount, this.data.carsPage, 7);
+        else
+          this.disPaginationGarage(
+            this.data.winnersCount,
+            this.data.winnersPage,
+            10
+          );
+      });
   }
 
-  public disPaginationGarage(limit: number) {
+  public disPaginationGarage(count: number, page: number, limit: number) {
     const prev = document.querySelector(".footer-btn__prev") as HTMLElement;
     const next = document.querySelector(".footer-btn__next") as HTMLElement;
-    if (this.data.carsPage > 1) {
+    if (page > 1) {
       prev.removeAttribute("disabled");
     } else {
       prev.setAttribute("disabled", "true");
     }
-    if (Math.ceil(this.data.carsCount / limit) === this.data.carsPage) {
+    if (Math.ceil(count / limit) === page) {
       next.setAttribute("disabled", "true");
     } else {
       next.removeAttribute("disabled");
@@ -116,7 +127,6 @@ export class AppController {
   }
 
   public select(id: number) {
-    console.log("sel", id);
     const updateInput = document.querySelectorAll(".update-input") as NodeList;
     const updateBtn = document.querySelector(".update-btn") as HTMLElement;
     (updateInput[0] as HTMLInputElement).removeAttribute("disabled");
@@ -150,7 +160,7 @@ export class AppController {
     this.startPage(callback);
   }
 
-  public startEngine(id: number): void {
+  async startEngine(id: number): Promise<Winners> {
     const A = document.querySelector(`[data-start = "${id}"]`) as HTMLElement;
     const B = document.querySelector(`[data-stop = "${id}"]`) as HTMLElement;
     const raceBtn = document.querySelector(`.race-btn`) as HTMLElement;
@@ -158,24 +168,45 @@ export class AppController {
     A.setAttribute("disabled", "true");
     raceBtn.setAttribute("disabled", "true");
     resetBtn.setAttribute("disabled", "true");
-    this.apimetods.startEngine(id).then((result) => {
-      const { velocity, distance } = result;
-      const duration = Math.round(distance / velocity);
-      const car = document.querySelector(`[data-id = "${id}"]`) as HTMLElement;
-      const flag = document.querySelector(
-        `[data-flag = "${id}"]`
-      ) as HTMLElement;
-      const way = flag.offsetLeft - car.offsetLeft + 100;
-      this.data.anima = this.supportmetods.animation(car, way, duration);
-      this.apimetods.driveEngine(id).then((res) => {
-        raceBtn.removeAttribute("disabled");
-        resetBtn.removeAttribute("disabled");
-        B.removeAttribute("disabled");
-        if (!res.success) {
-          if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
-        }
-      });
+    const thisCar = {} as Winners;
+    await this.apimetods.getCar(id).then((currentCar) => {
+      thisCar.car = currentCar;
     });
+    return this.apimetods
+      .startEngine(id)
+      .then((result) => {
+        const { velocity, distance } = result;
+        const time = Math.round(distance / velocity);
+        const car = document.querySelector(
+          `[data-id = "${id}"]`
+        ) as HTMLElement;
+        const flag = document.querySelector(
+          `[data-flag = "${id}"]`
+        ) as HTMLElement;
+        const way = flag.offsetLeft - car.offsetLeft + 100;
+        return { car, way, time };
+      })
+      .then((res) => {
+        const { car, way, time } = res;
+        this.data.anima = this.supportmetods.animation(car, way, time);
+        return time;
+      })
+      .then((time) => {
+        this.apimetods.driveEngine(id).then((res) => {
+          raceBtn.removeAttribute("disabled");
+          resetBtn.removeAttribute("disabled");
+          B.removeAttribute("disabled");
+          if (!res.success) {
+            if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
+          } else {
+            thisCar.time = time;
+            thisCar.wins = 1;
+          }
+        });
+      })
+      .then(() => {
+        return thisCar;
+      });
   }
 
   public stopEngine(id: number) {
@@ -186,6 +217,7 @@ export class AppController {
     const car = document.querySelector(`[data-id = "${id}"]`) as HTMLElement;
     const cloneCar = car;
     cloneCar.style.transform = `translateX(${0}px)`;
+    if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
   }
 
   public togglePage(namePage: string) {
@@ -201,12 +233,9 @@ export class AppController {
   }
 
   public race() {
-    this.data.cars.forEach((car) => {
-      const btn = document.querySelector(
-        `[data-start = "${car.id}"]`
-      ) as HTMLElement;
-      btn.click();
-    });
+    Promise.race(this.data.cars.map((car) => this.startEngine(car.id))).then(
+      (res) => console.log(res)
+    );
   }
 
   public reset() {

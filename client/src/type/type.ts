@@ -12,8 +12,21 @@ export interface Car {
   color: string;
   id?: number;
 }
-export interface Winner {
+
+export interface CarWithId {
+  name: string;
+  color: string;
   id: number;
+}
+
+export interface Winner {
+  id?: number;
+  wins: number;
+  time: number;
+}
+
+export interface Winners {
+  car: Car;
   wins: number;
   time: number;
 }
@@ -23,8 +36,8 @@ export interface Data {
   winnersPage: number;
   carsCount: number;
   winnersCount: number;
-  cars: Array<Car>;
-  winners: Array<Winner>;
+  cars: Array<CarWithId>;
+  winners: Array<Winners>;
   anima: Animation;
   view: string;
   sortBy: null;

@@ -1,4 +1,4 @@
-import { Car, Animation } from "../../type/type";
+import { Car, Animation, Winners } from "../../type/type";
 
 export class SupportMetods {
   public nameCar: Array<string> = [
@@ -47,6 +47,10 @@ export class SupportMetods {
     return new Array(count)
       .fill(0)
       .map(() => ({ name: this.randomCar(), color: this.randomColor() }));
+  }
+
+  public sortCar(data: Array<Winners>): Array<Winners> {
+    return data.sort((a: Winners, b: Winners) => a.time - b.time);
   }
 
   public animation(car: HTMLElement, way: number, duration: number) {
