@@ -233,9 +233,7 @@ export class AppController {
   }
 
   public race() {
-    Promise.race(this.data.cars.map((car) => this.startEngine(car.id))).then(
-      (res) => console.log(res)
-    );
+    Promise.all(this.data.cars.map((car) => this.startEngine(car.id)));
   }
 
   public reset() {
