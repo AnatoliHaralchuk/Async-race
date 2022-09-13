@@ -41,16 +41,16 @@ const baseConfig = {
             filename: 'index.html',
         }),
         new CleanWebpackPlugin(),
-        // new CopyWebpackPlagin(
-        //     {
-        //         patterns: [
-        //             {
-        //                 from: './client/src/assets',
-        //                 to: 'assets',
-        //             },
-        //         ]
-        //     }
-        //     )
+        new CopyWebpackPlagin(
+            {
+                patterns: [
+                    {
+                        from: './client/src/assets',
+                        to: 'assets',
+                    },
+                ]
+            }
+            )
     ],
 };
 

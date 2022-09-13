@@ -1,18 +1,18 @@
 import { ViewGarage } from "./viewGarage";
 import { ViewWinners } from "./viewWinners";
-import { Data } from "../../type/type";
+import { StatusPage } from "../../type/type";
 
 export class View {
-  garage: ViewGarage;
+  private garage: ViewGarage;
 
-  winners: ViewWinners;
+  private winners: ViewWinners;
 
   constructor() {
     this.garage = new ViewGarage();
     this.winners = new ViewWinners();
   }
 
-  drawFullPage(data: Data) {
+  public drawFullPage(data: StatusPage): string {
     document.body.innerHTML = "";
     return (
       this.drawHeaderBtn() +
@@ -22,14 +22,21 @@ export class View {
     );
   }
 
-  drawPageGarage(data: Data) {
-    const garageWrapper = document.querySelector(
-      ".garage-wrapper"
-    ) as HTMLElement;
-    garageWrapper.innerHTML = this.garage.drawGarage(data);
+  public drawPage(data: StatusPage): void {
+    if (data.view === "garage") {
+      const garageWrapper = document.querySelector(
+        ".garage-wrapper"
+      ) as HTMLElement;
+      garageWrapper.innerHTML = this.garage.drawGarage(data);
+    } else {
+      const winnersWrapper = document.querySelector(
+        ".to-winners"
+      ) as HTMLElement;
+      winnersWrapper.innerHTML = this.winners.drawListWin(data);
+    }
   }
 
-  drawHeaderBtn() {
+  public drawHeaderBtn(): string {
     return `
       <header class="header-btn">
           <button class="header-btn btn" data-page = "garage">To Garage</button>
@@ -37,7 +44,7 @@ export class View {
       </header>`;
   }
 
-  drawFooterBtn() {
+  public drawFooterBtn(): string {
     return `
       <footer class="footer-btn">
           <button class="footer-btn__prev btn">prev</button>

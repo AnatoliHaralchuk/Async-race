@@ -49,14 +49,14 @@ export class SupportMetods {
       .map(() => ({ name: this.randomCar(), color: this.randomColor() }));
   }
 
-  public sortCar(data: Array<Winners>): Array<Winners> {
-    return data.sort((a: Winners, b: Winners) => a.time - b.time);
+  public sortCar(data: Array<Winners>): Winners {
+    return data.sort((a: Winners, b: Winners) => a.time - b.time)[0];
   }
 
-  public animation(car: HTMLElement, way: number, duration: number) {
+  public animation(car: HTMLElement, way: number, duration: number): Animation {
     let start = 0;
     const obj: Animation = {};
-    function step(timestamp: number) {
+    function step(timestamp: number): void {
       if (!start) start = timestamp;
       const curTime = timestamp - start;
       const passWay = Math.round(curTime * (way / duration));

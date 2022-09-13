@@ -1,9 +1,19 @@
-import { Car, Path, Winner } from "../../type/type";
+import {
+  Car,
+  driveEngineStatus,
+  Path,
+  Winner,
+  PromiseCars,
+  PromiseWinners,
+  CarWithId,
+  WinnerWithId,
+  StatusEngine,
+} from "../../type/type";
 
 export class ApiLoader {
-  base: string;
+  private base: string;
 
-  path: Path;
+  private path: Path;
 
   constructor() {
     this.base = "http://127.0.0.1:3000";
@@ -14,7 +24,7 @@ export class ApiLoader {
     };
   }
 
-  async getCars(page: number, limit = 7) {
+  public async getCars(page: number, limit = 7): Promise<PromiseCars> {
     const response = await fetch(
       `${this.path.garage}?_page=${page}&_limit=${limit}`
     );
@@ -24,12 +34,12 @@ export class ApiLoader {
     };
   }
 
-  async getCar(id: number) {
+  public async getCar(id: number): Promise<CarWithId> {
     const response = await (await fetch(`${this.path.garage}/${id}`)).json();
     return response;
   }
 
-  async createCar(body: Car) {
+  public async createCar(body: Car): Promise<CarWithId> {
     const response = await (
       await fetch(`${this.path.garage}`, {
         method: "POST",
@@ -42,7 +52,7 @@ export class ApiLoader {
     return response;
   }
 
-  async deleteCar(id: number) {
+  public async deleteCar(id: number): Promise<CarWithId> {
     const response = await (
       await fetch(`${this.path.garage}/${id}`, {
         method: "DELETE",
@@ -51,7 +61,7 @@ export class ApiLoader {
     return response;
   }
 
-  async updateCar(id: number, body: Car) {
+  public async updateCar(id: number, body: Car): Promise<CarWithId> {
     const response = await (
       await fetch(`${this.path.garage}/${id}`, {
         method: "PUT",
@@ -64,7 +74,7 @@ export class ApiLoader {
     return response;
   }
 
-  async startEngine(id: number) {
+  public async startEngine(id: number): Promise<StatusEngine> {
     const response = await (
       await fetch(`${this.path.engine}?id=${id}&status=started`, {
         method: "PATCH",
@@ -73,7 +83,7 @@ export class ApiLoader {
     return response;
   }
 
-  async stopEngine(id: number) {
+  public async stopEngine(id: number): Promise<StatusEngine> {
     const response = await (
       await fetch(`${this.path.engine}?id=${id}&status=stopped`, {
         method: "PATCH",
@@ -82,16 +92,19 @@ export class ApiLoader {
     return response;
   }
 
-  async driveEngine(id: number) {
+  public async driveEngine(id: number): Promise<driveEngineStatus> {
     const response = await fetch(`${this.path.engine}?id=${id}&status=drive`, {
       method: "PATCH",
     }).catch();
-    return response.status !== 200
-      ? { success: false }
-      : { ...(await response.json()) };
+    return !response.ok ? { success: false } : { ...(await response.json()) };
   }
 
-  async getWinners(page: number, limit: number, sort?: string, order?: string) {
+  public async getWinners(
+    page: number,
+    limit: number,
+    sort: string,
+    order: string
+  ): Promise<PromiseWinners> {
     const response = await fetch(
       `${this.path.winners}?_page=${page}&_limit=${limit}${
         sort && order ? `&_sort=${sort}&_order=${order}` : ``
@@ -103,12 +116,12 @@ export class ApiLoader {
     };
   }
 
-  async getWinner(id: number) {
+  public async getWinner(id: number): Promise<WinnerWithId> {
     const response = await (await fetch(`${this.path.winners}/${id}`)).json();
     return response;
   }
 
-  async createWinner(body: Winner) {
+  public async createWinner(body: Winner): Promise<void> {
     const response = (
       await fetch(`${this.path.winners}`, {
         method: "POST",
@@ -121,7 +134,7 @@ export class ApiLoader {
     return response;
   }
 
-  async updateWinner(id: number, body: Winner) {
+  public async updateWinner(id: number, body: Winner): Promise<void> {
     const response = (
       await fetch(`${this.path.winners}/${id}`, {
         method: "PUT",
@@ -134,19 +147,19 @@ export class ApiLoader {
     return response;
   }
 
-  async deleteWinner(id: number) {
+  public async deleteWinner(id: number): Promise<void> {
     const response = (
       await fetch(`${this.path.winners}/${id}`, { method: "DELETE" })
     ).json();
     return response;
   }
 
-  async getWinnerStatus(id: number) {
+  public async getWinnerStatus(id: number): Promise<number> {
     const response = await fetch(`${this.path.winners}/${id}`);
     return response.status;
   }
 
-  async addWinner(id: number, time: number) {
+  public async addWinner(id: number, time: number): Promise<void> {
     const status = await this.getWinnerStatus(id);
     if (status === 404) {
       await this.createWinner({

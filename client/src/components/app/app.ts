@@ -11,10 +11,10 @@ export class App {
     this.view = new View();
   }
 
-  startApp() {
+  public startApp(): void {
     this.controller.startPage((data) => this.view.drawFullPage(data));
     document.body.addEventListener("click", (event) => {
-      this.controller.listener(event, (data) => this.view.drawPageGarage(data));
+      this.controller.listener(event, (data) => this.view.drawPage(data));
     });
   }
 }

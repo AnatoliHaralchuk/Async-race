@@ -1,18 +1,27 @@
 import { ApiLoader } from "./ApiLoader";
-import { callbackAny, Data, Winners } from "../../type/type";
+import {
+  callbackAny,
+  StatusPage,
+  WinnerWithId,
+  Winners,
+  CarWithId,
+  namePages,
+  sortName,
+  orderName,
+} from "../../type/type";
 import { SupportMetods } from "./supportMetods";
 
 export class AppController {
-  apimetods: ApiLoader;
+  private apimetods: ApiLoader;
 
-  supportmetods: SupportMetods;
+  private supportmetods: SupportMetods;
 
   constructor() {
     this.apimetods = new ApiLoader();
     this.supportmetods = new SupportMetods();
   }
 
-  public data: Data = {
+  public data: StatusPage = {
     carsPage: 1,
     winnersPage: 1,
     carsCount: 0,
@@ -20,41 +29,52 @@ export class AppController {
     cars: [],
     winners: [],
     anima: {},
-    view: "garage",
-    sortBy: null,
-    sortOrder: null,
+    view: namePages.garage,
+    sortBy: sortName.time,
+    sortOrder: orderName.up,
   };
 
-  public raceCar: Array<Winners> = [];
-
-  public startPage(callback: callbackAny<Data>) {
-    this.apimetods
-      .getCars(this.data.carsPage)
-      .then((result) => {
-        this.data.cars = result.data;
-        this.data.carsCount = Number(result.count);
-        if (document.querySelector(".wrapper")) {
-          callback(this.data);
-        } else {
-          const wrapper = document.createElement("div");
-          wrapper.classList.add("wrapper");
-          wrapper.innerHTML = `${callback(this.data)}`;
-          document.body.append(wrapper);
-        }
+  public async startPage(callback: callbackAny<StatusPage>): Promise<void> {
+    const resCars = await this.apimetods.getCars(this.data.carsPage);
+    this.data.cars = resCars.data as Array<CarWithId>;
+    this.data.carsCount = Number(resCars.count);
+    const resWinners = await this.apimetods.getWinners(
+      this.data.winnersPage,
+      10,
+      this.data.sortBy,
+      this.data.sortOrder
+    );
+    this.data.winnersCount = Number(resWinners.count);
+    this.data.winners = await Promise.all(
+      resWinners.data.map(async (item: WinnerWithId) => {
+        const el = {} as Winners;
+        const s = await this.apimetods.getCar(item.id);
+        el.car = s;
+        el.wins = item.wins;
+        el.time = item.time;
+        return el;
       })
-      .then(() => {
-        if (this.data.view === "garage")
-          this.disPaginationGarage(this.data.carsCount, this.data.carsPage, 7);
-        else
-          this.disPaginationGarage(
-            this.data.winnersCount,
-            this.data.winnersPage,
-            10
-          );
-      });
+    );
+    const wrap = document.querySelector(".wrapper");
+    if (wrap) callback(this.data);
+    else {
+      document.body.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("wrapper");
+      wrapper.innerHTML = `${callback(this.data)}`;
+      document.body.append(wrapper);
+    }
+    if (this.data.view === namePages.garage)
+      this.disPaginationGarage(this.data.carsCount, this.data.carsPage, 7);
+    else
+      this.disPaginationGarage(
+        this.data.winnersCount,
+        this.data.winnersPage,
+        10
+      );
   }
 
-  public disPaginationGarage(count: number, page: number, limit: number) {
+  public disPaginationGarage(count: number, page: number, limit: number): void {
     const prev = document.querySelector(".footer-btn__prev") as HTMLElement;
     const next = document.querySelector(".footer-btn__next") as HTMLElement;
     if (page > 1) {
@@ -69,7 +89,7 @@ export class AppController {
     }
   }
 
-  public listener(event: Event, callback: callbackAny<Data>) {
+  public listener(event: Event, callback: callbackAny<StatusPage>): void {
     const elem = event.target as HTMLElement;
     if (
       elem.classList.contains("create-btn") ||
@@ -77,29 +97,48 @@ export class AppController {
     ) {
       event.preventDefault();
       if (elem.classList.contains("create-btn")) {
-        this.create(callback);
+        this.createCar(callback);
       } else {
-        this.update(callback);
+        this.updateCar(callback);
       }
     }
     if (elem.classList.contains("select-car"))
-      this.select(Number(elem.dataset.select));
+      this.selectCar(Number(elem.dataset.select));
     if (elem.classList.contains("remove-car"))
-      this.delete(Number(elem.dataset.remove), callback);
+      this.deleteCar(Number(elem.dataset.remove), callback);
     if (elem.classList.contains("footer-btn__prev")) this.prev(callback);
     if (elem.classList.contains("footer-btn__next")) this.next(callback);
-    if (elem.classList.contains("generate-btn")) this.generate(callback);
+    if (elem.classList.contains("generate-btn")) this.generateCars(callback);
     if (elem.classList.contains("start-engine"))
       this.startEngine(Number(elem.dataset.start));
     if (elem.classList.contains("stop-engine"))
       this.stopEngine(Number(elem.dataset.stop));
-    if (elem.classList.contains("header-btn"))
+    if (elem.classList.contains("header-btn")) {
+      if (elem.dataset.page === "winners") {
+        this.data.view = "winners";
+        this.startPage(callback);
+      }
+      if (elem.dataset.page === namePages.garage)
+        this.data.view = namePages.garage;
+      this.disPaginationGarage(this.data.carsCount, this.data.carsPage, 7);
       this.togglePage(String(elem.dataset.page));
+    }
     if (elem.classList.contains("race-btn")) this.race();
     if (elem.classList.contains("reset-btn")) this.reset();
+    if (elem.classList.contains("popap")) {
+      elem.style.display = "none";
+    }
+    if (elem.classList.contains("th-btn")) {
+      if (elem.classList.contains("th-wins")) this.data.sortBy = sortName.wins;
+      else this.data.sortBy = sortName.time;
+      if (this.data.sortOrder === orderName.up)
+        this.data.sortOrder = orderName.down;
+      else this.data.sortOrder = orderName.up;
+      this.startPage(callback);
+    }
   }
 
-  async create(callback: callbackAny<Data>) {
+  public async createCar(callback: callbackAny<StatusPage>): Promise<void> {
     const createInput = document.querySelectorAll(".create-input") as NodeList;
     await this.apimetods.createCar({
       name: (createInput[0] as HTMLInputElement).value,
@@ -109,7 +148,7 @@ export class AppController {
     this.startPage(callback);
   }
 
-  async update(callback: callbackAny<Data>) {
+  public async updateCar(callback: callbackAny<StatusPage>): Promise<void> {
     const updateInput = document.querySelectorAll(".update-input");
     const updateBtn = document.querySelector(".update-btn") as HTMLElement;
     const id = Number(updateBtn.getAttribute("id"));
@@ -126,7 +165,7 @@ export class AppController {
     this.startPage(callback);
   }
 
-  public select(id: number) {
+  public selectCar(id: number): void {
     const updateInput = document.querySelectorAll(".update-input") as NodeList;
     const updateBtn = document.querySelector(".update-btn") as HTMLElement;
     (updateInput[0] as HTMLInputElement).removeAttribute("disabled");
@@ -136,31 +175,34 @@ export class AppController {
     this.apimetods.getCar(id).then((res) => {
       (updateInput[0] as HTMLInputElement).value = res.name;
       (updateInput[1] as HTMLInputElement).value = res.color;
-      updateBtn.setAttribute("id", res.id);
+      updateBtn.setAttribute("id", `${res.id}`);
     });
   }
 
-  public delete(id: number, callback: callbackAny<Data>): void {
+  public deleteCar(id: number, callback: callbackAny<StatusPage>): void {
     this.apimetods.deleteCar(id).then(() => this.startPage(callback));
+    this.apimetods.deleteWinner(id).then(() => this.startPage(callback));
   }
 
-  public prev(callback: callbackAny<Data>): void {
-    this.data.carsPage -= 1;
+  public prev(callback: callbackAny<StatusPage>): void {
+    if (this.data.view === namePages.garage) this.data.carsPage -= 1;
+    if (this.data.view === namePages.winners) this.data.winnersPage -= 1;
     this.startPage(callback);
   }
 
-  public next(callback: callbackAny<Data>): void {
-    this.data.carsPage += 1;
+  public next(callback: callbackAny<StatusPage>): void {
+    if (this.data.view === namePages.garage) this.data.carsPage += 1;
+    if (this.data.view === namePages.winners) this.data.winnersPage += 1;
     this.startPage(callback);
   }
 
-  public generate(callback: callbackAny<Data>): void {
+  public generateCars(callback: callbackAny<StatusPage>): void {
     const cars = this.supportmetods.generateHundred();
     cars.forEach((car) => this.apimetods.createCar(car));
     this.startPage(callback);
   }
 
-  async startEngine(id: number): Promise<Winners> {
+  public async startEngine(id: number): Promise<Winners> {
     const A = document.querySelector(`[data-start = "${id}"]`) as HTMLElement;
     const B = document.querySelector(`[data-stop = "${id}"]`) as HTMLElement;
     const raceBtn = document.querySelector(`.race-btn`) as HTMLElement;
@@ -169,10 +211,8 @@ export class AppController {
     raceBtn.setAttribute("disabled", "true");
     resetBtn.setAttribute("disabled", "true");
     const thisCar = {} as Winners;
-    await this.apimetods.getCar(id).then((currentCar) => {
-      thisCar.car = currentCar;
-    });
-    return this.apimetods
+    thisCar.car = await this.apimetods.getCar(id);
+    const q = await this.apimetods
       .startEngine(id)
       .then((result) => {
         const { velocity, distance } = result;
@@ -191,39 +231,38 @@ export class AppController {
         this.data.anima = this.supportmetods.animation(car, way, time);
         return time;
       })
-      .then((time) => {
-        this.apimetods.driveEngine(id).then((res) => {
-          raceBtn.removeAttribute("disabled");
-          resetBtn.removeAttribute("disabled");
-          B.removeAttribute("disabled");
-          if (!res.success) {
-            if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
-          } else {
-            thisCar.time = time;
-            thisCar.wins = 1;
-          }
-        });
-      })
-      .then(() => {
+      .then(async (time) => {
+        const res = await this.apimetods.driveEngine(id);
+        raceBtn.removeAttribute("disabled");
+        resetBtn.removeAttribute("disabled");
+        B.removeAttribute("disabled");
+        if (!res.success) {
+          if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
+          thisCar.time = time + 5000;
+          thisCar.wins = 1;
+        } else {
+          thisCar.time = time;
+          thisCar.wins = 1;
+        }
         return thisCar;
       });
+    return q;
   }
 
-  public stopEngine(id: number) {
+  public stopEngine(id: number): void {
     const A = document.querySelector(`[data-start = "${id}"]`) as HTMLElement;
     const B = document.querySelector(`[data-stop = "${id}"]`) as HTMLElement;
     A.removeAttribute("disabled");
     B.setAttribute("disabled", "true");
     const car = document.querySelector(`[data-id = "${id}"]`) as HTMLElement;
-    const cloneCar = car;
-    cloneCar.style.transform = `translateX(${0}px)`;
+    car.style.transform = `translateX(${0}px)`;
     if (this.data.anima.id) cancelAnimationFrame(this.data.anima.id);
   }
 
-  public togglePage(namePage: string) {
+  public togglePage(namePage: string): void {
     const winners = document.querySelector(".to-winners") as HTMLElement;
     const garage = document.querySelector(".main") as HTMLElement;
-    if (namePage === "garage") {
+    if (namePage === namePages.garage) {
       winners.style.display = "none";
       garage.style.display = "block";
     } else {
@@ -232,11 +271,21 @@ export class AppController {
     }
   }
 
-  public race() {
-    Promise.all(this.data.cars.map((car) => this.startEngine(car.id)));
+  public race(): void {
+    const popap = document.querySelector(".popap") as HTMLElement;
+    const popapText = document.querySelector(".popap span") as HTMLElement;
+    popapText.innerText = "";
+    Promise.all(this.data.cars.map((car) => this.startEngine(car.id)))
+      .then((allresult) => this.supportmetods.sortCar(allresult))
+      .then((win) => {
+        popap.style.display = "block";
+        const time = Number((win.time / 1000).toFixed(2));
+        popapText.innerText = `Wins ${win.car.name} with ${time} sec`;
+        this.apimetods.addWinner(win.car.id, time);
+      });
   }
 
-  public reset() {
+  public reset(): void {
     this.data.cars.forEach((car) => {
       const btn = document.querySelector(
         `[data-stop = "${car.id}"]`

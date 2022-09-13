@@ -25,13 +25,38 @@ export interface Winner {
   time: number;
 }
 
-export interface Winners {
-  car: Car;
+export interface WinnerWithId {
+  id: number;
   wins: number;
   time: number;
 }
 
-export interface Data {
+export interface PromiseCars {
+  data: Array<Car>;
+  count: string | null;
+}
+
+export interface PromiseWinners {
+  data: Array<WinnerWithId>;
+  count: string | null;
+}
+
+export interface driveEngineStatus {
+  success: boolean;
+}
+
+export interface StatusEngine {
+  velocity: number;
+  distance: number;
+}
+
+export interface Winners {
+  car: CarWithId;
+  wins: number;
+  time: number;
+}
+
+export interface StatusPage {
   carsPage: number;
   winnersPage: number;
   carsCount: number;
@@ -40,8 +65,8 @@ export interface Data {
   winners: Array<Winners>;
   anima: Animation;
   view: string;
-  sortBy: null;
-  sortOrder: null;
+  sortBy: string;
+  sortOrder: string;
 }
 export interface dataCar {
   data: Array<Car>;
@@ -50,4 +75,16 @@ export interface dataCar {
 export interface dataWinner {
   data: Array<Winner>;
   count: number;
+}
+export enum namePages {
+  garage = "garage",
+  winners = "winners",
+}
+export enum sortName {
+  time = "time",
+  wins = "wins",
+}
+export enum orderName {
+  up = "ASC",
+  down = "DESC",
 }

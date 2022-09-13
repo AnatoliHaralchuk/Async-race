@@ -21,6 +21,7 @@
     },
 
     "rules": {
+        "no-shadow": "off",
         "import/prefer-default-export": "off",
         "import/extensions": [
             "error",
@@ -53,5 +54,18 @@
                 ]
             }
         }
-    }
+    },
+    "overrides": [{
+        "files": ["*.ts"],
+        "rules": {
+            "@typescript-eslint/explicit-member-accessibility": ["error",
+                {
+                "accessibility": "explicit",
+                "overrides": {
+                    "constructors": "no-public"
+                }
+            }],
+            "@typescript-eslint/explicit-function-return-type": ["error"]
+        }
+    }]
 }

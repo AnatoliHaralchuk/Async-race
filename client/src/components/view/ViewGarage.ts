@@ -1,7 +1,7 @@
-import { Data, Car } from "../../type/type";
+import { StatusPage, Car } from "../../type/type";
 
 export class ViewGarage {
-  drawMain(data: Data) {
+  public drawMain(data: StatusPage): string {
     return `
         <main class="main">
             <div class="set-control">
@@ -24,12 +24,14 @@ export class ViewGarage {
             <div class="garage-wrapper">
                 ${this.drawGarage(data)}
             </div>
-            <div class="popap" style = "display = "none""></div>
+            <div class="popap" style = "display: none">
+                <span></span>
+            </div>
         </main>         
         `;
   }
 
-  drawGarage(data: Data) {
+  public drawGarage(data: StatusPage): string {
     return `
     <h1 class="title-main">Garage(${data.carsCount})</h1>
     <h2 class="title-page">Page #${data.carsPage}</h2>
@@ -42,7 +44,7 @@ export class ViewGarage {
       .join("")}`;
   }
 
-  drawCar(car: Car) {
+  public drawCar(car: Car): string {
     return `
         <div class="sub-set-control">
             <button class="select-car btn" data-select = "${
@@ -67,7 +69,7 @@ export class ViewGarage {
         </div>`;
   }
 
-  darwImage(color: string) {
+  public darwImage(color: string): string {
     return `<?xml version="1.0" standalone="no"?>
         <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
          "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
